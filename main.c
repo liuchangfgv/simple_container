@@ -33,7 +33,7 @@ int mkdev(
 }
 
 void get_console(uint16_t *num){
-	ioctl(0, TIOCGDEV, &num);//num[2]
+	ioctl(0, TIOCGDEV, &num);//num[3]
 }
 
 void umountall(){
