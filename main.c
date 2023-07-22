@@ -51,6 +51,7 @@ void umountall(){
 }
 
 int child(){
+	//关于在容器中运行systemd的条件，可以参考 https://systemd.io/CONTAINER_INTERFACE/
 	chroot("root");
 	chdir("/");
 	mount("proc","/proc","proc",0,NULL);
