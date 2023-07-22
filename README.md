@@ -12,3 +12,6 @@ sudo ./run
 
 ## TODO
 - 网络支持
+
+## Note
+- systemd结束要用SIGNAL3, 即`sudo kill -3 [systemd_pid]`
