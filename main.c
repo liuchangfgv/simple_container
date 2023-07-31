@@ -11,30 +11,44 @@
 #include <sys/stat.h>
 #include <errno.h>
 #include "net.h"
+#include <sys/sysmacros.h>
 
 #define STACK_SIZE (1024 * 1024)
 static char child_stack[STACK_SIZE];
 
+int container_pid;
+
+void signal_handler(int signum) {
+    if (signum == 30) {
+		kill(container_pid,3);
+    }
+}
+
 int mkdev(
-	mode_t console_mode,dev_t console_dev
+	dev_t console_dev
 ){
 	mount("tmpfs","/dev","tmpfs",0,NULL);
-	mknod("/dev/console",console_mode, console_dev);
-	mknod("/dev/null",1,3);
-	mknod("/dev/zero",1,5);
-	mknod("/dev/full",1,7);
-	mknod("/dev/random",1,8);
-	mknod("/dev/urandom",1,9);
-	mknod("/dev/tty",5,0);
-	mknod("/dev/ptmx",5,2);
+	mknod("/dev/console",S_IFCHR |0600, console_dev);
+	mknod("/dev/tty1",S_IFCHR |0600, console_dev);
+	mknod("/dev/null",S_IFCHR | 0666,makedev(1,3));
+	// chmod("/dev/null",0666);
+	mknod("/dev/zero",S_IFCHR | 0666,makedev(1,5));
+	// chmod("/dev/zero",0666);
+	mknod("/dev/full",S_IFCHR | 0666,makedev(1,7));
+	// chmod("/dev/full",0666);
+	mknod("/dev/random",S_IFCHR | 0666,makedev(1,8));
+	// chmod("/dev/random",0666);
+	mknod("/dev/urandom",S_IFCHR | 0666,makedev(1,9));
+	// chmod("/dev/urandom",0666);
+	mknod("/dev/tty",S_IFCHR | 0666,makedev(5,0));
+	// chmod("/dev/tty",0666);
+	mknod("/dev/ptmx",S_IFCHR | 0666,makedev(5,2));
+	// chmod("/dev/ptmx",0666);
 	mkdir("/dev/pts",0655);
+	// chmod("/dev/pts",0755);
 	mount("devpts","/dev/pts","devpts",0,NULL);
 
 	return 0;
-}
-
-void get_console(uint16_t *num){
-	ioctl(0, TIOCGDEV, &num);//num[3]
 }
 
 void umountall(){
@@ -57,9 +71,9 @@ int child(){
 	chdir("/");
 	mount("proc","/proc","proc",0,NULL);
 	// mount("dev","/dev","devtmpfs",0,NULL);
-	uint8_t num[3];
-	get_console(num);
-	mkdev(num[1],num[0]);
+	dev_t num;
+	ioctl(0, TIOCGDEV, &num);
+	mkdev(num);
 	mount("sys","/sys","sysfs",MS_NOEXEC|MS_NOSUID|MS_RDONLY|MS_NODEV,NULL);
 	// mount("proc","/proc/sys","proc",MS_NOEXEC|MS_NOSUID|MS_RDONLY|MS_NODEV,NULL);
 	mount("tmpfs","/run","tmpfs",0,NULL);
@@ -73,6 +87,7 @@ int child(){
   
 	clearenv();
 	setenv("PATH","/bin:/usr/bin:/sbin:/usr:/sbin");
+	setenv("container","llccontaner");
 	sethostname("aaa",strlen("aaa"));
 	
 
@@ -98,7 +113,8 @@ int child(){
 			enable_net_dev("tun0");
 			set_net_ip_mask("tun0", "10.9.9.2/24");
 			waitpid(pid, NULL, 0);
-			kill(1,3);
+			kill(0,30);
+			return 0;
 		}
 		else{
 			cmd[0]="/bin/bash";cmd[1]=NULL;
@@ -110,18 +126,20 @@ int child(){
 }
 
 int main(){
+	signal(30, signal_handler);
 	if(getuid()){
 		printf("Must run as root!\n");
 		return -1;
 	}
 	printf("loading...\n");
 
-	int pid = clone(child,child_stack+STACK_SIZE,
+	container_pid = clone(child,child_stack+STACK_SIZE,
 			CLONE_NEWPID|CLONE_NEWUTS|CLONE_NEWNET|
                     CLONE_NEWCGROUP|
                     CLONE_NEWNS|CLONE_NEWIPC|SIGCHLD 
 			,NULL);
-	waitpid(pid,NULL,0);
+	printf("pid:%d\n",container_pid);
+	waitpid(container_pid,NULL,0);
 	umountall();
 	printf("end\n");
 	return 0;
