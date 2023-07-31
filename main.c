@@ -1,15 +1,16 @@
 #include <stdint.h>
-#include<stdio.h>
+#include <stdio.h>
 #define _GNU_SOURCE
 #define __USE_GNU
-#include<sched.h>
-#include<sys/types.h>
-#include<unistd.h>
-#include<sys/wait.h>
-#include<sys/mount.h>
-#include<string.h>
-#include<sys/stat.h>
-#include<errno.h>
+#include <sched.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <sys/wait.h>
+#include <sys/mount.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <errno.h>
+#include "net.h"
 
 #define STACK_SIZE (1024 * 1024)
 static char child_stack[STACK_SIZE];
@@ -73,14 +74,36 @@ int child(){
 	clearenv();
 	setenv("PATH","/bin:/usr/bin:/sbin:/usr:/sbin");
 	sethostname("aaa",strlen("aaa"));
+	
+
 	char *cmd[2];
+	int pid;
+	// pid = fork();
 	if(fork()){
+		// if(!fork()){
+		// 	int tun_no = tun_alloc("tun0");
+		// 	enable_net_dev("tun0");
+		// 	set_net_ip_mask("tun0", "10.9.9.2/24");
+		// 	waitpid(pid, NULL, 0);
+		// 	kill(1,3);
+		// }
 		cmd[0]="/sbin/init";cmd[1]=NULL;
 		execvp(cmd[0],cmd);
 	}
 	else{
-		cmd[0]="/bin/bash";cmd[1]=NULL;
-		execvp(cmd[0],cmd);
+		int pid;
+		pid = fork();
+		if(pid){
+			int tun_no = tun_alloc("tun0");
+			enable_net_dev("tun0");
+			set_net_ip_mask("tun0", "10.9.9.2/24");
+			waitpid(pid, NULL, 0);
+			kill(1,3);
+		}
+		else{
+			cmd[0]="/bin/bash";cmd[1]=NULL;
+			execvp(cmd[0],cmd);
+		}
 	}
 	printf("ん? run %s faild\n",cmd[0]);
 	return 0;

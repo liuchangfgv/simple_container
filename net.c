@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include "net.h"
 
 int tun_alloc(char *dev){
     /*
@@ -27,7 +28,7 @@ int tun_alloc(char *dev){
 
     memset(&ifr,0,sizeof(ifr));
 
-    ifr.ifr_flags = IFF_TAP | IFF_NO_PI;
+    ifr.ifr_flags = IFF_TUN | IFF_NO_PI;
     strcpy(ifr.ifr_name,dev);
 
     err = ioctl(fd,TUNSETIFF,(void *)&ifr);
