@@ -12,6 +12,7 @@
 #include <errno.h>
 #include "net.h"
 #include <sys/sysmacros.h>
+#include <stdlib.h>
 
 #define STACK_SIZE (1024 * 1024)
 static char child_stack[STACK_SIZE];
@@ -86,8 +87,10 @@ int child(){
 	mount("tmpfs","/sys/fs/cgroup/systemd","tmpfs",0,NULL);
   
 	clearenv();
-	setenv("PATH","/bin:/usr/bin:/sbin:/usr:/sbin");
-	setenv("container","llccontaner");
+	setenv("PATH","/bin:/usr/bin:/sbin:/usr:/sbin",1);
+	setenv("container","llccontaner",1);
+	setenv("container_ttys","tty1",1);
+	setenv("TERM","linux",1);
 	sethostname("aaa",strlen("aaa"));
 	
 
