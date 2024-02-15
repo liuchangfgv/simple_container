@@ -1,3 +1,4 @@
+#include "mount.h"
 #include <stdint.h>
 #include <stdio.h>
 #define _GNU_SOURCE
