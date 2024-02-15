@@ -16,7 +16,8 @@ sudo ./run
 - [x] clone创建新名字空间
 - [x] 挂载容器内的相关目录
 - [ ] cgroups限制容器资源
-- [ ] seccomp限制容器功能
+- [x] seccomp限制容器功能
+- [ ] 容器内网络访问
 - [ ] (optinal)使用fuse创建一个fake proc
 
 ## Note

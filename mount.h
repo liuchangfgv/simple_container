@@ -2,6 +2,7 @@
 #define KASORA_MOUNT_H
 
 #include <stddef.h>
+#include <sys/types.h>
 
 struct mount_point{
     char *host_path;//host路径
@@ -15,6 +16,8 @@ struct mount_point{
 #define MOUNT_ATTR_NOEXEC   0x4
 #define MOUNT_ATTR_NOSUID   0x8
 #define MOUNT_ATTR_TMPFS    0x10
+#define MOUNT_POINT_END     0x20
 
+int mount_root(struct mount_point *mp,dev_t console,int enable_x11);
 
 #endif
