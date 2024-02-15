@@ -104,7 +104,7 @@ int child(){
   
 	clearenv();
 	setenv("PATH","/bin:/usr/bin:/sbin:/usr:/sbin",1);
-	setenv("container","llccontaner",1);
+	setenv("container","kasora_contaner",1);
 	setenv("container_ttys","tty1",1);
 	setenv("TERM","linux",1);
 	sethostname("aaa",strlen("aaa"));
