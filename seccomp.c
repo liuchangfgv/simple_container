@@ -18,7 +18,7 @@ int initSeccomp(){
     seccomp_rule_add(ctx, SCMP_ACT_ERRNO(ENOSYS), SCMP_SYS(fchmodat), 1,SCMP_A1(SCMP_CMP_MASKED_EQ,S_ISUID,S_ISUID));//禁用suid
     seccomp_rule_add(ctx, SCMP_ACT_ERRNO(ENOSYS), SCMP_SYS(fchmodat), 1, SCMP_A1(SCMP_CMP_MASKED_EQ, S_ISGID, S_ISGID));//禁用sgid
 
-    seccomp_rule_add(ctx,SCMP_ACT_ERRNO(ENOSYS),SCMP_SYS(mount),0);//禁止mount
+    seccomp_rule_add(ctx, SCMP_ACT_ERRNO(ENOSYS),SCMP_SYS(mount),0);//禁止mount
     seccomp_rule_add(ctx, SCMP_ACT_ERRNO(ENOSYS), SCMP_SYS(umount), 0);
     seccomp_rule_add(ctx, SCMP_ACT_ERRNO(ENOSYS), SCMP_SYS(umount2), 0);
 

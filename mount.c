@@ -2,6 +2,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/mount.h>
 #include <sys/stat.h>
 #include <sys/sysmacros.h>
@@ -19,7 +20,7 @@ void creatDirIfNotexist(char *path,unsigned int mode){
     }
 }
 
-int mount_root(struct mount_point *mp,dev_t console,int enable_x11){
+int mount_root(struct mount_point *mp,int enable_x11){
     mount(NULL, "/", NULL, MS_REC | MS_PRIVATE, NULL);//这可以避免在host中同时挂载
 
     //获取一个随机的uuid
@@ -101,7 +102,7 @@ int mount_root(struct mount_point *mp,dev_t console,int enable_x11){
     creatDirIfNotexist(tmp, 0666);
     mount("sys",tmp,"sysfs",MS_NOEXEC|MS_NOSUID|MS_RDONLY|MS_NODEV,NULL);
     sprintf(tmp,"%s%s",real_root_dir,"sys/fs/cgroup");
-    mount("/sys/fs/cgroup",tmp,NULL,MS_BIND | MS_PRIVATE,NULL);
+    mount("cgroup2",tmp,"cgroup2",0,NULL);
     sprintf(tmp,"%s%s",real_root_dir,"sys/fs/fuse");
     mount("/sys/fs/fuse",tmp,NULL,MS_BIND | MS_PRIVATE,NULL);
     sprintf(tmp,"%s%s",real_root_dir,"sys/fs/selinux");//只读,如果存在selinux
@@ -112,12 +113,17 @@ int mount_root(struct mount_point *mp,dev_t console,int enable_x11){
     mount("tmpfs",tmp,"tmpfs",MS_PRIVATE | MS_RDONLY,NULL);
 
     //处理/dev
+    char console_path[4096];
+    realpath("/proc/self/fd/0", console_path);
     sprintf(tmp,"%s%s",real_root_dir,"dev");
     creatDirIfNotexist(tmp, 0666);
+    mount("tmpfs", tmp, "tmpfs", 0, NULL);
     sprintf(tmp,"%s%s",real_root_dir,"dev/console");
-    mknod(tmp,S_IFCHR |0600, console);
+    close(open(tmp,O_RDWR|O_CREAT,0777));
+    mount(console_path,tmp,NULL,MS_BIND | MS_PRIVATE,NULL);
     sprintf(tmp,"%s%s",real_root_dir,"dev/tty1");
-	mknod(tmp,S_IFCHR |0600, console);
+    close(open(tmp,O_RDWR|O_CREAT,0777));
+    mount(console_path,tmp,NULL,MS_BIND | MS_PRIVATE,NULL);
     sprintf(tmp,"%s%s",real_root_dir,"dev/null");
     mknod(tmp,S_IFCHR | 0666,makedev(1,3));
     sprintf(tmp,"%s%s",real_root_dir,"dev/zero");
@@ -135,6 +141,10 @@ int mount_root(struct mount_point *mp,dev_t console,int enable_x11){
     sprintf(tmp,"%s%s",real_root_dir,"dev/pts");
 	creatDirIfNotexist(tmp, 0666);
 	mount("devpts",tmp,"devpts",0,NULL);
+    sprintf(tmp,"%s%s",real_root_dir,"dev/shm");
+    creatDirIfNotexist(tmp,0666);
+    mount("tmpfs",tmp,"tmpfs",0,NULL);
+
 
     //换根
     sprintf(tmp,"%s%s",real_root_dir,"tmp/.oldroot");

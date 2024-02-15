@@ -18,6 +18,6 @@ struct mount_point{
 #define MOUNT_ATTR_TMPFS    0x10
 #define MOUNT_POINT_END     0x20
 
-int mount_root(struct mount_point *mp,dev_t console,int enable_x11);
+int mount_root(struct mount_point *mp,int enable_x11);
 
 #endif

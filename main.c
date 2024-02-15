@@ -75,8 +75,8 @@ int child(){
 	// chdir("/");
 	// mount("proc","/proc","proc",0,NULL);
 	// mount("dev","/dev","devtmpfs",0,NULL);
-	dev_t num;
-	ioctl(0, TIOCGDEV, &num);
+	// dev_t num;
+	// ioctl(0, TIOCGDEV, &num);
 	// mkdev(num);
 	// mount("sys","/sys","sysfs",MS_NOEXEC|MS_NOSUID|MS_RDONLY|MS_NODEV,NULL);
 	// mount("proc","/proc/sys","proc",MS_NOEXEC|MS_NOSUID|MS_RDONLY|MS_NODEV,NULL);
@@ -99,7 +99,7 @@ int child(){
         }
     };
 
-    mount_root(mp, num, 1);
+    mount_root(mp, 1);
     initSeccomp();
   
 	clearenv();
